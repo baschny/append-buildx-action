@@ -18,10 +18,9 @@ Input
 * `node_name`: The name of the new node (defaults to `arm`)
 * `driver_opt`: Some --driver-opt settings, for example `nodeselector=kubernetes.io/arch=arm64`
 * `endpoint`: An endpoint/context for this node, i.e. `ssh://user@docker-instance.example.com`
-
-If using an `ssh://` endpoint, make sure you set a secret in your repository containing
-the private SSH key, called `SSH_PRIVATE_KEY`. You need SSH access to this docker machine
-with its corresponding public key.
+* `ssh_private_key`: If using an `ssh://` endpoint, make sure you set a secret in your repository
+  containing the private SSH key. You need SSH access to this docker machine with its
+  corresponding public key.
 
 Example Workflow
 ----------------
@@ -49,6 +48,7 @@ jobs:
         with:
           builder: ${{ steps.builder.outputs.name }}
           endpoint: "ssh://ec2-user@arm-docker.example.com"
+          ssh_private_key: ${{ secrets.SSH_PRIVATE_KEY }}
 ```
 
 License
