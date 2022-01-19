@@ -15,15 +15,13 @@ inputs:
     default: "arm"
     required: false
   driver_opt:
-    description: "Some --driver-opt settings, for example `nodeselector=kubernetes.io/arch=arm64`"
+    description: "Some --driver-opt settings - i.e. `nodeselector=kubernetes.io/arch=arm64`"
     default: ""
     required: false
   endpoint:
-    description: "An endpoint/context for this node, i.e. ssh://user@docker-instance.example.com"
+    description: "An endpoint/context for this node - i.e. `ssh://user@docker-instance.example.com`"
     default: ""
     required: false
-
-outputs:
 
 runs:
   using: "composite"
@@ -67,6 +65,7 @@ runs:
         if [ ! -z "$DRIVER_OPT" ]; then
           BUILDX_OPTS=--driver-opt $DRIVER_OPT
         fi
+        echo "* Appending buildx node $NODE_NAME to builder $BUILDER_NAME (for platform: $PLATFORM)..."
         docker buildx create --append --name $BUILDER_NAME \
             --node $NODE_NAME --platform $PLATFORM \
             $BUILDX_OPTS $ENDPOINT
