@@ -1,0 +1,76 @@
+name: 'Append BuildX nodes'
+description: 'Appends docker buildx nodes to an already setup buildex builder.'
+
+inputs:
+  builder:
+    description: "The builder name from the previous step"
+    default: ""
+    required: true
+  platform:
+    description: "For what platform to add the new node (defaults to `linux/arm64`)"
+    default: "linux/arm64"
+    required: false
+  node_name:
+    description: "The name of the new node (defaults to `arm`)"
+    default: "arm"
+    required: false
+  driver_opt:
+    description: "Some --driver-opt settings, for example `nodeselector=kubernetes.io/arch=arm64`"
+    default: ""
+    required: false
+  endpoint:
+    description: "An endpoint/context for this node, i.e. ssh://user@docker-instance.example.com"
+    default: ""
+    required: false
+
+outputs:
+
+runs:
+  using: "composite"
+  steps:
+    - env:
+        BUILDER_NAME: ${{ inputs.builder }}
+        NODE_PLATFORM: ${{ inputs.platform }}
+        NODE_NAME: ${{ inputs.node_name }}
+        DRIVER_OPT: ${{ inputs.driver_opt }}
+        ENDPOINT: ${{ inputs.endpoint }}
+      shell: bash
+      id: composer_run
+      run: |
+        set -e
+
+        # Load ssh key allowing access to the remote docker
+        if [ ! -z "${{ secrets.SSH_PRIVATE_KEY }}" ]; then
+          # Do not check hostkey (for now)
+          mkdir -p ~/.ssh
+          cat <<EOF > ~/.ssh/config
+          Host *
+             StrictHostKeyChecking no
+             UserKnownHostsFile=/dev/null
+             ControlMaster auto
+             ControlPath ~/.ssh/control-%C
+             ControlPersist yes
+          EOF
+          eval $(ssh-agent -s)
+          ssh-add <(echo "${{ secrets.SSH_PRIVATE_KEY }}")
+          # Remember this agent also in future steps, because it will be used in the "build" step later on
+          echo "SSH_AUTH_SOCK=$SSH_AUTH_SOCK" >> $GITHUB_ENV
+        fi
+
+        if [ ! -z "$ENDPOINT" ]; then
+          echo "* Testing connection to $ENDPOINT..."
+          docker -H $ENDPOINT info
+        fi
+
+        # Append the node to the builder
+        BUILDX_OPTS=
+        if [ ! -z "$DRIVER_OPT" ]; then
+          BUILDX_OPTS=--driver-opt $DRIVER_OPT
+        fi
+        docker buildx create --append --name $BUILDER_NAME \
+            --node $NODE_NAME --platform $PLATFORM \
+            $BUILDX_OPTS $ENDPOINT
+
+branding:
+  icon: 'package'
+  color: 'purple'
