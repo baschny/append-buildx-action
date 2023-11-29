@@ -51,6 +51,33 @@ jobs:
           ssh_private_key: ${{ secrets.SSH_PRIVATE_KEY }}
 ```
 
+Troubleshooting
+---------------
+
+### Issue: Cannot Connect to Docker Daemon
+
+If you encounter the error:
+
+```
+ERROR: Cannot connect to the Docker daemon at http://docker.example.com. Is the docker daemon running?
+```
+
+This is typically a permission issue. To resolve it, follow these steps on your server:
+
+1. **Add Docker Group**: Create a Docker group, if it doesn't exist:
+   ```bash
+   sudo groupadd docker
+   ```
+
+2. **Add User to Docker Group**: Grant Docker permissions to your user:
+   ```bash
+   sudo usermod -aG docker $USER
+   ```
+
+3. **Re-login**: Log out and back in to apply these changes.
+
+For detailed information, refer to Docker's post-installation steps for Linux: [Docker Documentation](https://docs.docker.com/engine/install/linux-postinstall/).
+
 License
 -------
 
