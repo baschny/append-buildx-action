@@ -51,10 +51,6 @@ jobs:
           ssh_private_key: ${{ secrets.SSH_PRIVATE_KEY }}
 ```
 
-Certainly! Here's the section you can add to the README.md for `baschny/append-buildx-action`, including the reference to the Docker documentation:
-
----
-
 Troubleshooting
 ---------------
 
